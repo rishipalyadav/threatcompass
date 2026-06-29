@@ -1,0 +1,1 @@
+Our onboarding platform uses GPT-4 Vision to extract information from Aadhaar, PAN, passports, and driving licenses. OCR results are verified against customer-provided information and internal databases. Face matching is performed using a third-party facial recognition API before creating the customer account.

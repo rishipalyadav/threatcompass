@@ -1,0 +1,1 @@
+from .generator import enrich_report_with_narratives

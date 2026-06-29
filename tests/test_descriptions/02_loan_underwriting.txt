@@ -1,0 +1,1 @@
+We have developed an AI assistant that helps loan officers review loan applications. The assistant reads customer-submitted documents, retrieves credit bureau information, checks internal lending policies using a RAG system, and recommends whether the loan should be approved. The final approval is always performed by a human underwriter.

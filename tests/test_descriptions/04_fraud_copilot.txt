@@ -1,0 +1,1 @@
+We have built an AI copilot for fraud analysts. It retrieves transaction history, customer information, and fraud alerts from multiple internal systems. Analysts ask questions in natural language, and the AI generates investigation summaries and recommends whether accounts should be frozen.

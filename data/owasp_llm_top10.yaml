@@ -1,0 +1,186 @@
+# OWASP LLM Top 10 - 2025 Edition
+# Source: https://owasp.org/www-project-top-10-for-large-language-model-applications/
+# This file is the authoritative reference for all evaluators.
+# Do not modify threat IDs or names — they are used as keys across the codebase.
+
+threats:
+
+  LLM01:
+    id: LLM01
+    name: Prompt Injection
+    owasp_description: >
+      Prompt injection occurs when user-supplied input alters the LLM's intended
+      behavior or overrides its system instructions. This includes direct injection
+      via user input and indirect injection via external content retrieved into context
+      (documents, web pages, database records).
+    why_it_matters_in_bfsi: >
+      In banking and financial services, a successful prompt injection can override
+      safety guardrails, exfiltrate customer account data, trigger unauthorized
+      transactions, or cause the model to provide false financial advice.
+    key_signals:
+      - accepts_user_input
+      - has_rag
+      - retrieves_external_content
+      - customer_facing
+
+  LLM02:
+    id: LLM02
+    name: Insecure Output Handling
+    owasp_description: >
+      LLM output is consumed by downstream systems or displayed to users without
+      adequate validation or sanitization. This can lead to XSS, SSRF, privilege
+      escalation, or remote code execution depending on how the output is used.
+    why_it_matters_in_bfsi: >
+      In BFSI systems, insecure output can result in malformed transaction data
+      being written to core banking systems, incorrect regulatory decisions being
+      made based on AI output, or injection attacks via AI-generated content.
+    key_signals:
+      - output_used_in_downstream_system
+      - output_rendered_in_ui
+      - output_triggers_action
+      - has_code_execution
+
+  LLM03:
+    id: LLM03
+    name: Training Data Poisoning
+    owasp_description: >
+      Malicious or biased data introduced into training or fine-tuning datasets
+      causes the model to behave in unintended ways, produce incorrect outputs,
+      or exhibit biases that can be exploited.
+    why_it_matters_in_bfsi: >
+      A poisoned model used in credit decisioning or fraud detection can
+      systematically discriminate against customer segments or be manipulated
+      to approve fraudulent applications or miss real fraud patterns.
+    key_signals:
+      - uses_fine_tuned_model
+      - trains_on_customer_data
+      - model_updated_from_feedback
+      - rag_data_user_contributed
+
+  LLM04:
+    id: LLM04
+    name: Model Denial of Service
+    owasp_description: >
+      Adversarial inputs designed to maximize computational resource consumption —
+      extremely long inputs, recursive prompts, resource-intensive queries — degrade
+      model availability and inflate API costs.
+    why_it_matters_in_bfsi: >
+      A DoS attack against a bank's AI system during high-traffic periods (salary
+      credit day, payment deadlines) can prevent customers from accessing services,
+      creating reputational and regulatory risk.
+    key_signals:
+      - accepts_user_input
+      - customer_facing
+      - no_input_length_limits_mentioned
+      - high_volume_expected
+
+  LLM05:
+    id: LLM05
+    name: Supply Chain Vulnerabilities
+    owasp_description: >
+      Risks from third-party model providers, plugins, fine-tuning services,
+      or pre-trained model sources that are outside the organization's direct
+      control and may introduce vulnerabilities, backdoors, or privacy risks.
+    why_it_matters_in_bfsi: >
+      Using third-party LLM APIs means customer data leaves the organization's
+      control boundary. Model provider outages, policy changes, or security
+      incidents directly impact your service. For Indian BFSI, data residency
+      and RBI guidelines on outsourcing apply.
+    key_signals:
+      - uses_external_llm_api
+      - uses_third_party_plugins
+      - uses_third_party_embeddings
+      - third_party_model_provider
+
+  LLM06:
+    id: LLM06
+    name: Sensitive Information Disclosure
+    owasp_description: >
+      LLMs can inadvertently reveal sensitive information from training data,
+      system prompts, retrieved context, or other users' conversations through
+      direct responses or inference attacks.
+    why_it_matters_in_bfsi: >
+      In banking systems, sensitive disclosure can expose customer PII, account
+      details, transaction history, credit information, or internal policies to
+      unauthorized users — violating RBI data protection requirements and
+      potentially triggering breach notification obligations.
+    key_signals:
+      - handles_pii
+      - handles_financial_data
+      - handles_kyc_data
+      - stores_conversation_history
+      - multi_tenant
+      - has_rag
+
+  LLM07:
+    id: LLM07
+    name: Insecure Plugin Design
+    owasp_description: >
+      LLM plugins or tools that lack proper input validation, access controls,
+      or authorization checks can be exploited through the LLM to perform
+      unintended actions on connected systems.
+    why_it_matters_in_bfsi: >
+      Banking API plugins connected to an LLM without proper authorization
+      scoping can be manipulated via prompt injection to access accounts or
+      data beyond what the user is authorized to see.
+    key_signals:
+      - has_plugins
+      - has_tools
+      - calls_internal_apis
+      - api_called_without_user_reauth
+
+  LLM08:
+    id: LLM08
+    name: Excessive Agency
+    owasp_description: >
+      LLM-based systems granted excessive permissions, functionality, or autonomy
+      to take real-world actions without adequate human oversight, verification,
+      or reversibility controls.
+    why_it_matters_in_bfsi: >
+      An LLM that can initiate financial transactions, freeze accounts, approve
+      loans, or modify customer records represents a critical risk if manipulated.
+      Financial actions taken by AI without proper human-in-the-loop controls
+      can be irreversible and have direct regulatory implications.
+    key_signals:
+      - can_initiate_transactions
+      - can_modify_records
+      - can_freeze_accounts
+      - can_approve_decisions
+      - agentic_actions
+      - actions_without_human_confirmation
+
+  LLM09:
+    id: LLM09
+    name: Overreliance
+    owasp_description: >
+      Excessive dependence on LLM outputs without adequate human oversight,
+      verification, or critical evaluation — especially in high-stakes decision
+      contexts where hallucination or errors have serious consequences.
+    why_it_matters_in_bfsi: >
+      Over-reliance on AI recommendations in credit decisioning, fraud detection,
+      or regulatory compliance without human review can lead to systematic errors
+      at scale — wrongly denying loans, missing fraud patterns, or making
+      non-compliant decisions that affect thousands of customers.
+    key_signals:
+      - makes_recommendations
+      - decision_has_financial_impact
+      - decision_affects_customer
+      - human_review_not_mentioned
+      - high_stakes_domain
+
+  LLM10:
+    id: LLM10
+    name: Model Theft
+    owasp_description: >
+      Unauthorized extraction or replication of proprietary model parameters,
+      behavior, or training data through systematic querying, side-channel
+      attacks, or direct access to model infrastructure.
+    why_it_matters_in_bfsi: >
+      Proprietary AI models trained on internal banking data, lending policies,
+      or fraud patterns represent significant intellectual property. Model theft
+      can expose competitive advantages and the underlying data used to train them.
+    key_signals:
+      - uses_fine_tuned_model
+      - model_trained_on_proprietary_data
+      - high_query_volume_possible
+      - api_publicly_accessible
