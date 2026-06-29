@@ -1,4 +1,4 @@
-# ThreatLens AI 🔍
+# ThreatCompass AI 🔍
 
 **AI threat modeling for AI systems — mapped to OWASP LLM Top 10**
 
@@ -16,7 +16,7 @@ Describe any AI-powered application in plain English. Get a structured threat mo
 
 ## Why It's Different
 
-Most threat modeling tools were built for traditional software. They have no concept of prompt injection, excessive agency, training data poisoning, or supply chain risks specific to LLM systems. ThreatLens AI was built specifically for systems that use AI as a component or as the core product.
+Most threat modeling tools were built for traditional software. They have no concept of prompt injection, excessive agency, training data poisoning, or supply chain risks specific to LLM systems. ThreatCompass AI was built specifically for systems that use AI as a component or as the core product.
 
 ---
 
@@ -25,8 +25,8 @@ Most threat modeling tools were built for traditional software. They have no con
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/yourusername/threatlens
-cd threatlens
+git clone https://github.com/rishipalyadav/threatcompass
+cd threatcompass
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -36,7 +36,7 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env and add your Anthropic API key
+# Edit .env and add your LLM Provider API key
 ```
 
 ### 3. Run the UI
@@ -60,7 +60,7 @@ Description (plain text)
         ↓
 LLM Extraction          — Structured system profile (one LLM call)
         ↓
-OWASP Rule Engine       — 10 deterministic evaluators (your code)
+OWASP Rule Engine       — 10 deterministic evaluators (deterministic code)
         ↓
 Risk Scoring            — Severity with BFSI context modifiers
         ↓
@@ -104,7 +104,7 @@ Four BFSI scenarios included in `tests/test_descriptions/`:
 ## Stack
 
 - Python 3.11
-- Anthropic SDK (Claude claude-sonnet-4-6)
+- OpenAI SDK 
 - Streamlit
 - python-dotenv
 
@@ -112,4 +112,4 @@ Four BFSI scenarios included in `tests/test_descriptions/`:
 
 ## Author
 
-Rishipal Yadav | CISSP | [linkedin.com/in/rishipalyadav](https://linkedin.com/in/rishipalyadav)
+Rishipal Yadav | CISSP | [@NotYourCISO](https://notyourciso.medium.com) | [linkedin.com/in/rishipalyadav](https://linkedin.com/in/rishipalyadav)
