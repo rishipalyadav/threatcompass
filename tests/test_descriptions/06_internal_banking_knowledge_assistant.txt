@@ -1,0 +1,1 @@
+We have deployed an internal chatbot using Azure OpenAI and a vector database containing banking policies, SOPs, audit reports, and compliance documentation. Employees can ask questions about internal procedures, and the assistant retrieves relevant documents before generating responses.

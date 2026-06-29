@@ -70,7 +70,7 @@ def _get_client():
     )
 
 
-def _call_llm(prompt: str, max_tokens: int = 800) -> str:
+def _call_llm(prompt: str) -> str:
     """
     Makes a Groq API call and returns raw text.
     Raises exception on failure — callers decide how to handle.
@@ -78,7 +78,6 @@ def _call_llm(prompt: str, max_tokens: int = 800) -> str:
     client = _get_client()
     response = client.chat.completions.create(
         model=os.getenv("GROQ_MODEL"),
-        max_tokens=max_tokens,
         temperature=0,
         messages=[
             {
@@ -92,7 +91,7 @@ def _call_llm(prompt: str, max_tokens: int = 800) -> str:
             {"role": "user", "content": prompt}
         ],
     )
-    # print(response.choices[0].message.content.strip())
+    print("call LLM" + str(response))
     return response.choices[0].message.content.strip()
 
 
@@ -115,10 +114,9 @@ def _parse_json(raw: str) -> dict:
     end = raw.rfind("}")
     if start != -1 and end != -1 and end > start:
         raw = raw[start:end+1]
-
+    print("in json parse" + raw)
     if not raw:
         raise ValueError("Empty response from LLM")
-
     return json.loads(raw)
 
 
@@ -128,7 +126,8 @@ def check_ai_components(description: str) -> tuple:
     Raises exception if API call fails — let the UI handle it.
     """
     prompt = AI_DETECTION_PROMPT.replace("{description}", description.strip())
-    raw = _call_llm(prompt, max_tokens=200)
+    raw = _call_llm(prompt)
+    print("Data in Check AI Component"+ raw)
     data = _parse_json(raw)
     return bool(data.get("has_ai_components", True)), data.get("reasoning", "")
 
@@ -140,7 +139,8 @@ def get_clarifying_questions(description: str) -> list:
     Raises exception if API call fails — let the UI handle it.
     """
     prompt = CLARIFIER_PROMPT.replace("{description}", description.strip())
-    raw = _call_llm(prompt, max_tokens=800)
+    raw = _call_llm(prompt)
+    print("Data in Clarifying Questions" + raw)
     data = _parse_json(raw)
     return data.get("questions", [])
 

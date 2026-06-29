@@ -34,6 +34,7 @@ class EvaluationResult:
     mitigations: List[str]            # Concrete actions to address this threat
     owasp_reference: str              # Link to OWASP documentation
     narrative: Optional[str] = None  # Filled in later by narrative generator
+    user_type: str = "model_operator" #model operator
 
     @property
     def severity_score(self) -> int:
@@ -68,6 +69,12 @@ class BaseEvaluator(ABC):
     def get_mitigations(self, system) -> List[str]:
         """Return list of concrete mitigations for this system."""
         pass
+
+    def is_operator(self, system) -> bool:
+        return system.user_type in ("model_operator", "hybrid")
+
+    def is_builder(self, system) -> bool:
+        return system.user_type in ("model_builder", "hybrid")
 
     def evaluate(self, system) -> EvaluationResult:
         """Run the full evaluation. Called by the runner."""

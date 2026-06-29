@@ -1,5 +1,5 @@
 """
-ui/app.py — ThreatLens for AI Products
+ui/app.py — ThreatCompass for AI Products
 
 Flow:
   Step 1 — User describes system
@@ -21,21 +21,6 @@ import sys, os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# ── Page config (must be first Streamlit call) ────────────────────────────────
-st.set_page_config(
-    page_title="ThreatLens for AI Products",
-    page_icon="🔍",
-    layout="wide",
-)
-
-from engine.clarifier import (
-    check_ai_components,
-    get_clarifying_questions,
-    build_enriched_description,
-)
-from engine.runner import run
-from narrative.generator import enrich_report_with_narratives
-from report.pdf_builder import generate_pdf
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def _parse_narrative_sections(narrative: str) -> dict:
@@ -61,6 +46,24 @@ def _parse_narrative_sections(narrative: str) -> dict:
     if current and buffer:
         sections[current] = "\n".join(buffer).strip()
     return sections
+
+# ── Page config (must be first Streamlit call) ────────────────────────────────
+st.set_page_config(
+    page_title="ThreatCompass for AI Products",
+    page_icon="🔍",
+    layout="wide",
+)
+
+from engine.clarifier import (
+    check_ai_components,
+    get_clarifying_questions,
+    build_enriched_description,
+)
+from engine.runner import run
+from narrative.generator import enrich_report_with_narratives
+from report.pdf_builder import generate_pdf
+
+
 
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -93,6 +96,14 @@ SAMPLES = {
         os.path.join(os.path.dirname(__file__),
                      "../tests/test_descriptions/04_fraud_copilot.txt")
     ).read().strip(),
+    "Autonomous Trading Agent": open(
+        os.path.join(os.path.dirname(__file__),
+                     "../tests/test_descriptions/05_autonomous_trading_agent.txt")
+    ).read().strip(),
+"Internal Banking Knowledge Assistant": open(
+        os.path.join(os.path.dirname(__file__),
+                     "../tests/test_descriptions/06_internal_banking_knowledge_assistant.txt")
+    ).read().strip(),
 }
 
 # ── Session state ─────────────────────────────────────────────────────────────
@@ -116,13 +127,15 @@ def reset():
 
 
 def set_error(msg: str):
-    st.session_state.error = msg
+    # Log the actual error to console for debugging
+    print(f"[ThreatLens ERROR] {msg}")
+    st.session_state.error = "Something went wrong, please try again."
 
 
 # ── Header ────────────────────────────────────────────────────────────────────
 col_title, col_reset = st.columns([5, 1])
 with col_title:
-    st.title("🔍 ThreatLens for AI Products")
+    st.title("🔍 ThreatCompass for AI Products")
     st.caption(
         "Threat modeling specific to AI-enabled products — "
         "powered by OWASP LLM Top 10 (2025)"
@@ -173,7 +186,7 @@ if st.session_state.no_ai_detected:
     st.warning(
         "### ⚠️ No AI Components Detected\n\n"
         f"{st.session_state.ai_reasoning}\n\n"
-        "ThreatLens is designed specifically for threat modeling of **AI-enabled products**. "
+        "ThreatCompass is designed specifically for threat modeling of **AI-enabled products**. "
         "It evaluates risks from the OWASP LLM Top 10 framework, which applies only to systems "
         "that use AI/ML models, LLM APIs, or AI-powered components.\n\n"
         "**Does your system actually contain AI components that weren't mentioned in your description?**"
@@ -191,7 +204,7 @@ if st.session_state.no_ai_detected:
                      use_container_width=True):
             st.session_state.no_ai_detected = False
             st.info(
-                "**ThreatLens is for AI-enabled products only.**\n\n"
+                "**ThreatCompass is for AI-enabled products only.**\n\n"
                 "For threat modeling of traditional software systems, consider tools like "
                 "OWASP Threat Dragon, Microsoft Threat Modeling Tool, or IriusRisk.\n\n"
                 "If you add AI components to your system in the future, come back — "
@@ -343,7 +356,7 @@ elif st.session_state.step == 3 and st.session_state.report:
             st.download_button(
                 label="⬇ Download PDF",
                 data=pdf_bytes,
-                file_name=f"threatlens_{s.project_name.replace(' ', '_').lower()}.pdf",
+                file_name=f"ThreatCompass_{s.project_name.replace(' ', '_').lower()}.pdf",
                 mime="application/pdf",
                 type="primary",
                 use_container_width=True,
@@ -400,6 +413,9 @@ elif st.session_state.step == 3 and st.session_state.report:
             st.write(f"Hosting: `{s.llm_hosting}`")
             st.write(f"Fine-tuned: `{s.fine_tuned}`")
             st.write(f"RAG: `{s.has_rag}`")
+            st.write(f"User type: `{s.user_type}`")
+            if s.user_type_reasoning:
+                st.caption(s.user_type_reasoning)
         with c2:
             st.markdown("**Data Handled**")
             st.write(f"PII: `{s.handles_pii}`")
@@ -499,6 +515,13 @@ elif st.session_state.step == 3 and st.session_state.report:
         ]
     for item in grc_items:
         st.checkbox(item, value=False, key=f"grc_{item[:50]}")
+    st.divider()
+    st.warning(
+        "⚠️ **Disclaimer:** This is a project-generated work. Kindly verify with "
+        "your expertise before acting on any recommendations. This report is "
+        "suggestive in nature and should not be treated as a substitute for a "
+        "professional security assessment."
+    )
 
 
 # ── Footer ────────────────────────────────────────────────────────────────────
@@ -506,7 +529,7 @@ st.divider()
 st.markdown(
     "<div style='text-align:center; color:#888; font-size:0.82em; padding:8px;'>"
     "Made by <strong>NotYourCISO</strong> with ❤️ &nbsp;·&nbsp; "
-    "ThreatLens for AI Products &nbsp;·&nbsp; OWASP LLM Top 10 (2025)"
+    "ThreatCompass for AI Products &nbsp;·&nbsp; OWASP LLM Top 10 (2025)"
     "</div>",
     unsafe_allow_html=True,
 )

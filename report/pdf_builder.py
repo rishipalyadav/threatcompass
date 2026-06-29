@@ -81,6 +81,15 @@ def _styles():
 
     return custom
 
+def _draw_watermark(canvas, doc):
+    canvas.saveState()
+    canvas.setFont("Helvetica", 40)
+    canvas.setFillColorRGB(0.85, 0.85, 0.85, alpha=0.3)
+    canvas.translate(A4[0]/2, A4[1]/2)
+    canvas.rotate(45)
+    canvas.drawCentredString(0, 0, "ThreatCompass by NotYourCISO")
+    canvas.restoreState()
+
 
 def generate_pdf(report) -> bytes:
     """
@@ -93,7 +102,7 @@ def generate_pdf(report) -> bytes:
         pagesize=A4,
         leftMargin=2*cm, rightMargin=2*cm,
         topMargin=2*cm, bottomMargin=2.5*cm,
-        title=f"ThreatLens Report — {report.system.project_name}",
+        title=f"ThreatCompass Report — {report.system.project_name}",
     )
 
     st = _styles()
@@ -102,7 +111,8 @@ def generate_pdf(report) -> bytes:
 
     # ── Cover ─────────────────────────────────────────────────────────────
     story.append(Spacer(1, 1*cm))
-    story.append(Paragraph("🔍 ThreatLens for AI Products", st["title"]))
+    story.append(Paragraph("🔍 ThreatCompass for AI Products", st["title"]))
+    story.append(Spacer(1, 1 * cm))
     story.append(Paragraph("Threat Model Report", st["subtitle"]))
     story.append(HRFlowable(width="100%", thickness=2,
                             color=colors.HexColor("#1a1a2e")))
@@ -280,18 +290,31 @@ def generate_pdf(report) -> bytes:
         story.append(Paragraph(f"☐  {item}", st["bullet"]))
 
     # ── Footer ────────────────────────────────────────────────────────────
+    story.append(Spacer(1, 0.5 * cm))
+    story.append(Paragraph(
+        "⚠ Disclaimer",
+        ParagraphStyle("disc_head", fontSize=9, fontName="Helvetica-Bold",
+                       textColor=colors.HexColor("#cc6600"))
+    ))
+    story.append(Paragraph(
+        "This is a project-generated work. Kindly verify with your expertise before "
+        "acting on any recommendations. This report is suggestive in nature and should "
+        "not be treated as a substitute for professional security assessment.",
+        ParagraphStyle("disc_body", fontSize=8, fontName="Helvetica-Oblique",
+                       textColor=colors.HexColor("#666666"), leading=12)
+    ))
     story.append(Spacer(1, 1*cm))
     story.append(HRFlowable(width="100%", thickness=0.5,
                             color=colors.HexColor("#cccccc")))
     story.append(Spacer(1, 0.2*cm))
     story.append(Paragraph(
-        "Made by NotYourCISO with love  ·  ThreatLens for AI Products  ·  "
+        "Made by NotYourCISO with love  ·  ThreatCompass for AI Products  ·  "
         f"Generated {datetime.now().strftime('%d %b %Y')}  ·  "
         "OWASP LLM Top 10 (2025)",
         st["footer"]
     ))
 
-    doc.build(story)
+    doc.build(story, onFirstPage=_draw_watermark, onLaterPages=_draw_watermark)
     return buffer.getvalue()
 
 

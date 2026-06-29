@@ -81,17 +81,44 @@ class LLM03_TrainingDataPoisoning(BaseEvaluator):
             )
         return evidence
 
+    # def get_mitigations(self, system) -> List[str]:
+    #     return [
+    #         "Maintain provenance records for all training and fine-tuning data — "
+    #         "know exactly where every training example came from.",
+    #         "Implement anomaly detection on training datasets — "
+    #         "flag outliers and unusual patterns before training runs.",
+    #         "Conduct adversarial testing after every fine-tuning cycle — "
+    #         "verify model behavior has not changed in unexpected ways.",
+    #         "If using user-generated data for training, implement human review "
+    #         "and filtering pipeline before data enters training sets.",
+    #     ]
     def get_mitigations(self, system) -> List[str]:
-        return [
-            "Maintain provenance records for all training and fine-tuning data — "
-            "know exactly where every training example came from.",
-            "Implement anomaly detection on training datasets — "
-            "flag outliers and unusual patterns before training runs.",
-            "Conduct adversarial testing after every fine-tuning cycle — "
-            "verify model behavior has not changed in unexpected ways.",
-            "If using user-generated data for training, implement human review "
-            "and filtering pipeline before data enters training sets.",
-        ]
+        if self.is_operator(system):
+            return [
+                "Subscribe to your model provider's security advisories and release notes — "
+                "treat model version changes like dependency upgrades requiring review.",
+                "Review model cards and safety evaluations before upgrading to a new model version — "
+                "check for known biases, failure modes, or behavior changes.",
+                "Establish an internal policy requiring security review before deploying "
+                "a new model version to production — don't auto-upgrade.",
+                "Test model behavior against your critical use cases after every provider "
+                "model update — regression test for safety, not just functionality.",
+                "Document which model version is running in production and maintain "
+                "a change log — required for incident investigation.",
+            ]
+        else:
+            return [
+                "Maintain provenance records for all training and fine-tuning data — "
+                "know exactly where every training example came from.",
+                "Implement anomaly detection on training datasets — "
+                "flag outliers and unusual patterns before training runs.",
+                "Conduct adversarial testing after every fine-tuning cycle — "
+                "verify model behavior has not changed in unexpected ways.",
+                "Implement human review and filtering pipeline before user-generated "
+                "data enters training sets.",
+                "Maintain a reproducible training pipeline with version-controlled datasets "
+                "so poisoning incidents can be identified and rolled back.",
+            ]
 
 
 class LLM04_ModelDoS(BaseEvaluator):
@@ -161,20 +188,48 @@ class LLM05_SupplyChain(BaseEvaluator):
             )
         return evidence
 
+    # # def get_mitigations(self, system) -> List[str]:
+    #     mitigations = [
+    #         "Add LLM provider to your Third-Party Risk Management program — "
+    #         "conduct security assessment, review DPA, confirm breach notification terms.",
+    #         "Implement fallback handling for LLM provider outages — "
+    #         "define graceful degradation behavior rather than hard failures.",
+    #     ]
+    #     if system.is_bfsi:
+    #         mitigations.append(
+    #             "Verify data residency compliance with RBI outsourcing guidelines — "
+    #             "confirm customer financial data is not stored or processed outside "
+    #             "permitted jurisdictions by the LLM provider."
+    #         )
+    #     # return mitigations
     def get_mitigations(self, system) -> List[str]:
-        mitigations = [
-            "Add LLM provider to your Third-Party Risk Management program — "
-            "conduct security assessment, review DPA, confirm breach notification terms.",
-            "Implement fallback handling for LLM provider outages — "
-            "define graceful degradation behavior rather than hard failures.",
-        ]
-        if system.is_bfsi:
-            mitigations.append(
-                "Verify data residency compliance with RBI outsourcing guidelines — "
-                "confirm customer financial data is not stored or processed outside "
-                "permitted jurisdictions by the LLM provider."
-            )
-        return mitigations
+        if self.is_operator(system):
+            return [
+                "Add your LLM provider to your Third-Party Risk Management program — "
+                "assess their security posture, certifications, and breach history.",
+                "Review the provider's data processing agreement — confirm they are not "
+                "training on your prompts and responses, and understand their retention policy.",
+                "Monitor provider status pages and security advisories — "
+                "set up alerts for incidents that could affect your service.",
+                "Review model changelogs before version upgrades — "
+                "behavior changes in new model versions can introduce new risks.",
+                "Implement fallback handling for provider outages — "
+                "define what your system does when the AI API is unavailable.",
+                "Strengthen your own API layer around the LLM — "
+                "input validation, output filtering, rate limiting, and audit logging "
+                "are entirely within your control regardless of provider.",
+            ]
+        else:
+            return [
+                "Audit all dependencies in your model training and serving stack — "
+                "treat ML libraries (transformers, pytorch, etc.) like any software dependency.",
+                "Use reproducible builds for model training pipelines — "
+                "pin dependency versions and verify checksums.",
+                "Verify integrity of pre-trained model weights before fine-tuning — "
+                "download from official sources, verify hashes.",
+                "Implement security scanning on any third-party model components "
+                "integrated into your serving infrastructure.",
+            ]
 
 
 class LLM07_InsecurePlugin(BaseEvaluator):
@@ -299,12 +354,38 @@ class LLM10_ModelTheft(BaseEvaluator):
             )
         return evidence
 
+    # def get_mitigations(self, system) -> List[str]:
+    #     return [
+    #         "Implement rate limiting per user and API key to make "
+    #         "systematic model extraction economically infeasible.",
+    #         "Monitor for unusual query patterns — "
+    #         "high volume, systematically varied inputs may indicate extraction attempts.",
+    #         "Add output perturbation for fine-tuned models — "
+    #         "slight randomness in responses makes exact model replication harder.",
+    #     ]
+
     def get_mitigations(self, system) -> List[str]:
-        return [
-            "Implement rate limiting per user and API key to make "
-            "systematic model extraction economically infeasible.",
-            "Monitor for unusual query patterns — "
-            "high volume, systematically varied inputs may indicate extraction attempts.",
-            "Add output perturbation for fine-tuned models — "
-            "slight randomness in responses makes exact model replication harder.",
-        ]
+        if self.is_operator(system):
+            return [
+                "You don't own the base model — but you own your prompt engineering, "
+                "system prompts, and application logic. Treat these as IP and protect them.",
+                "Implement rate limiting and anomaly detection on query patterns — "
+                "systematic probing of your application can extract your prompt design.",
+                "Do not expose your system prompt directly — test that users cannot "
+                "extract it through prompt injection or repeated probing.",
+                "If you use fine-tuned models via the provider's fine-tuning API, "
+                "review the provider's terms on model ownership and data usage.",
+            ]
+        else:
+            return [
+                "Implement rate limiting per user and API key to make systematic "
+                "model extraction economically infeasible.",
+                "Monitor for unusual query patterns — high volume, systematically "
+                "varied inputs may indicate extraction attempts.",
+                "Add output perturbation for sensitive fine-tuned models — "
+                "slight randomness in responses makes exact replication harder.",
+                "Restrict direct model access — serve through an API layer, "
+                "never expose model weights or architecture directly.",
+                "Register proprietary model architecture and training methodology "
+                "as trade secrets with appropriate legal protections.",
+            ]

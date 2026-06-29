@@ -86,8 +86,18 @@ Return ONLY valid JSON matching this exact schema. No markdown, no explanation.
     "authentication_mentioned": true or false
   },
 
+  "user_type": "one of: model_operator | model_builder | hybrid",
+  "user_type_reasoning": "one sentence explaining why",
   "compliance_hints": []
 }
+
+Classification guidance:
+- model_operator: uses external AI APIs (OpenAI, Groq, Gemini, Anthropic, Azure OpenAI etc.) 
+  and does NOT train or fine-tune their own model
+- model_builder: trains, fine-tunes, or hosts their own model
+- hybrid: uses external APIs but also fine-tunes or trains custom models on top
+
+When in doubt, default to model_operator — it is the more common case.
 
 System description:
 {description}
@@ -147,7 +157,8 @@ class ExtractedSystem:
     internal_employees: bool = False
     admins_or_analysts: bool = False
     authentication_mentioned: bool = False
-
+    user_type: str = "model_operator"  # model_operator | model_builder | hybrid
+    user_type_reasoning: str = ""
     compliance_hints: List[str] = field(default_factory=list)
 
     @property
@@ -206,7 +217,7 @@ def extract_system(enriched_description: str) -> ExtractedSystem:
         base_url="https://api.groq.com/openai/v1",
     )
     response = client.chat.completions.create(
-        model=os.getenv("GROQ_MODEL"),
+        model=os.getenv("GROQ_MODEL") or "qwen/qwen3-32b",
         max_tokens=1500,
         temperature=0,
         messages=[
@@ -283,4 +294,6 @@ def extract_system(enriched_description: str) -> ExtractedSystem:
         authentication_mentioned=usr.get("authentication_mentioned", False),
 
         compliance_hints=data.get("compliance_hints", []),
+        user_type=data.get("user_type", "model_operator"),
+        user_type_reasoning=data.get("user_type_reasoning", ""),
     )

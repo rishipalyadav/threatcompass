@@ -26,7 +26,8 @@ You are analyzing a specific threat for a client's AI-powered system.
 System: {project_name}
 Industry: {domain}
 Summary: {summary}
-
+User Type: {user_type}
+{user_type_context}
 Threat: {threat_id} — {threat_name}
 Severity: {severity}
 
@@ -36,6 +37,7 @@ Evidence identified in this specific system:
 Write a structured threat analysis with EXACTLY these four sections.
 Be specific to THIS system — not generic. Reference their actual components.
 Do not show any thinking or reasoning. Output only the four sections below.
+Important: This team is a {user_type_label}. Tailor ALL advice to what they actually control.
 
 **Threat Narrative**
 2-3 sentences explaining what this threat is in the context of their specific system.
@@ -65,6 +67,28 @@ def generate_narrative(threat, report) -> str:
     """
     evidence_text = "\n".join(f"- {e}" for e in threat.evidence)
 
+    user_type = report.system.user_type
+    if user_type == "model_operator":
+        user_type_label = "model operator (they call external AI APIs, they do NOT control the model itself)"
+        user_type_context = (
+            "They cannot fix model-level issues directly. "
+            "Their control surface is: prompts, API guardrails, input/output validation, "
+            "data handling, and application-level controls around the AI."
+        )
+    elif user_type == "model_builder":
+        user_type_label = "model builder (they train or fine-tune their own models)"
+        user_type_context = (
+            "They have full control over the model. "
+            "Advice can cover training data, model architecture, fine-tuning pipeline, "
+            "and model serving infrastructure."
+        )
+    else:  # hybrid
+        user_type_label = "hybrid (uses external APIs but also fine-tunes custom models)"
+        user_type_context = (
+            "They have partial model control via fine-tuning. "
+            "Cover both API-level guardrails and fine-tuning pipeline security."
+        )
+
     prompt = NARRATIVE_PROMPT.format(
         project_name=report.system.project_name,
         domain=report.system.domain,
@@ -73,6 +97,9 @@ def generate_narrative(threat, report) -> str:
         threat_name=threat.threat_name,
         severity=threat.severity,
         evidence=evidence_text,
+        user_type=user_type,
+        user_type_label=user_type_label,
+        user_type_context=user_type_context,
     )
 
     client = OpenAI(
@@ -80,7 +107,7 @@ def generate_narrative(threat, report) -> str:
         base_url="https://api.groq.com/openai/v1",
     )
     response = client.chat.completions.create(
-        model=os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+        model=os.getenv("GROQ_MODEL") or "qwen/qwen3-32b",
         max_tokens=700,
         temperature=0.3,
         messages=[

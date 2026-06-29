@@ -1,0 +1,1 @@
+We are building an AI agent that analyzes financial news, market data, and company filings using multiple LLMs. The agent recommends trades and can automatically execute approved trading strategies using our brokerage APIs without manual intervention.

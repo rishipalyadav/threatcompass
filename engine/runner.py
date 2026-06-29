@@ -89,7 +89,7 @@ if __name__ == "__main__":
         quality monitoring. Human agents can take over conversations if required.
         """
 
-    print("\n🔍 Running ThreatLens AI...\n")
+    print("\n🔍 Running ThreatCompass AI...\n")
     report = run(desc)
 
     print(f"Project:      {report.system.project_name}")
