@@ -10,6 +10,7 @@ import os
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
+import streamlit as st
 
 load_dotenv()
 
@@ -62,10 +63,17 @@ System description:
 {description}
 """
 
+api_key_extract = os.getenv("GROQ_API_KEY")
+if api_key_extract is None:
+    api_key_extract = st.secrets["GROQ_API_KEY"]
+
+model_extract = os.getenv("GROQ_MODEL")
+if model_extract is None:
+    model_extract = st.secrets["GROQ_MODEL"]
 
 def _get_client():
     return OpenAI(
-        api_key=os.getenv("GROQ_API_KEY"),
+        api_key=api_key_extract,
         base_url="https://api.groq.com/openai/v1",
     )
 
@@ -77,7 +85,7 @@ def _call_llm(prompt: str) -> str:
     """
     client = _get_client()
     response = client.chat.completions.create(
-        model=os.getenv("GROQ_MODEL"),
+        model=model_extract,
         temperature=0,
         messages=[
             {

@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import List
 from openai import OpenAI
 from dotenv import load_dotenv
+import streamlit as st
 
 load_dotenv()
 
@@ -103,6 +104,13 @@ System description:
 {description}
 """
 
+api_key_extract = os.getenv("GROQ_API_KEY")
+if api_key_extract is None:
+    api_key_extract = st.secrets["GROQ_API_KEY"]
+
+model_extract = os.getenv("GROQ_MODEL")
+if model_extract is None:
+    model_extract = st.secrets["GROQ_MODEL"]
 
 @dataclass
 class ExtractedSystem:
@@ -213,11 +221,11 @@ def extract_system(enriched_description: str) -> ExtractedSystem:
     prompt = EXTRACTION_PROMPT.replace("{description}", enriched_description.strip())
 
     client = OpenAI(
-        api_key=os.getenv("GROQ_API_KEY"),
+        api_key=api_key_extract,
         base_url="https://api.groq.com/openai/v1",
     )
     response = client.chat.completions.create(
-        model=os.getenv("GROQ_MODEL") or "qwen/qwen3-32b",
+        model=model_extract,
         max_tokens=1500,
         temperature=0,
         messages=[
