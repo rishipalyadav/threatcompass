@@ -35,6 +35,9 @@ class EvaluationResult:
     owasp_reference: str              # Link to OWASP documentation
     narrative: Optional[str] = None  # Filled in later by narrative generator
     user_type: str = "model_operator" #model operator
+    signals_detected: int = 0   # signals detected
+    signals_total: int = 0  #signals total
+    severity_override_reason: Optional[str] = None # update severity
 
     @property
     def severity_score(self) -> int:
@@ -76,9 +79,18 @@ class BaseEvaluator(ABC):
     def is_builder(self, system) -> bool:
         return system.user_type in ("model_builder", "hybrid")
 
+    def get_signal_count(self) -> int:
+        """
+        Total number of possible signals this evaluator checks for.
+        Override in each evaluator to match the number of evidence-generating
+        conditions in get_evidence(). Default is 4 — most evaluators check ~4 things.
+        """
+        return 4
+
     def evaluate(self, system) -> EvaluationResult:
         """Run the full evaluation. Called by the runner."""
         fired = self.fires(system)
+        evidence = self.get_evidence(system) if fired else []
         return EvaluationResult(
             threat_id=self.threat_id,
             threat_name=self.threat_name,
@@ -87,4 +99,6 @@ class BaseEvaluator(ABC):
             evidence=self.get_evidence(system) if fired else [],
             mitigations=self.get_mitigations(system) if fired else [],
             owasp_reference=self.owasp_reference,
+            signals_detected=len(evidence),
+            signals_total=self.get_signal_count(),
         )

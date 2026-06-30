@@ -40,6 +40,9 @@ class LLM02_InsecureOutput(BaseEvaluator):
             )
         return evidence
 
+    def get_signal_count(self) -> int:
+        return 2  # transactions, freeze, approve, modify, internal apis
+
     def get_mitigations(self, system) -> List[str]:
         return [
             "Validate and sanitize all LLM outputs before passing to downstream systems — "
@@ -80,6 +83,9 @@ class LLM03_TrainingDataPoisoning(BaseEvaluator):
                 "users can intentionally craft inputs to influence future model behavior."
             )
         return evidence
+
+    def get_signal_count(self) -> int:
+        return 2  # transactions, freeze, approve, modify, internal apis
 
     # def get_mitigations(self, system) -> List[str]:
     #     return [
@@ -143,6 +149,9 @@ class LLM04_ModelDoS(BaseEvaluator):
             "(salary credits, payment deadlines) has direct customer and regulatory impact."
         ]
 
+    def get_signal_count(self) -> int:
+        return 1  # transactions, freeze, approve, modify, internal apis
+
     def get_mitigations(self, system) -> List[str]:
         return [
             "Enforce input length limits at the application layer — "
@@ -187,6 +196,9 @@ class LLM05_SupplyChain(BaseEvaluator):
                 f"providers directly affect your system's security."
             )
         return evidence
+
+    def get_signal_count(self) -> int:
+        return 2  # transactions, freeze, approve, modify, internal apis
 
     # # def get_mitigations(self, system) -> List[str]:
     #     mitigations = [
@@ -264,6 +276,9 @@ class LLM07_InsecurePlugin(BaseEvaluator):
             )
         return evidence
 
+    def get_signal_count(self) -> int:
+        return 2  # transactions, freeze, approve, modify, internal apis
+
     def get_mitigations(self, system) -> List[str]:
         return [
             "Ensure every internal API validates authorization independently — "
@@ -309,6 +324,9 @@ class LLM09_Overreliance(BaseEvaluator):
             )
         return evidence
 
+    def get_signal_count(self) -> int:
+        return 2  # transactions, freeze, approve, modify, internal apis
+
     def get_mitigations(self, system) -> List[str]:
         return [
             "Frame AI outputs explicitly as recommendations, not decisions — "
@@ -353,6 +371,9 @@ class LLM10_ModelTheft(BaseEvaluator):
                 "high query volume from the public makes systematic model probing feasible."
             )
         return evidence
+
+    def get_signal_count(self) -> int:
+        return 2  # transactions, freeze, approve, modify, internal apis
 
     # def get_mitigations(self, system) -> List[str]:
     #     return [

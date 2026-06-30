@@ -89,6 +89,9 @@ class LLM06_SensitiveDisclosure(BaseEvaluator):
 
         return evidence
 
+    def get_signal_count(self) -> int:
+        return 7  # aadhaar/pan, financial+customer, credit, conv history, external provider, multi-tenant, rag+sensitive
+
     def get_mitigations(self, system) -> List[str]:
         mitigations = []
 

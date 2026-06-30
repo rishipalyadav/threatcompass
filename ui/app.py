@@ -62,7 +62,7 @@ from engine.clarifier import (
 from engine.runner import run
 from narrative.generator import enrich_report_with_narratives
 from report.pdf_builder import generate_pdf
-
+from report.markdown_builder import generate_markdown
 
 
 
@@ -129,7 +129,10 @@ def reset():
 def set_error(msg: str):
     # Log the actual error to console for debugging
     print(f"[ThreatLens ERROR] {msg}")
-    st.session_state.error = "Something went wrong, please try again."
+    st.session_state.error = (
+        "The AI model couldn't generate a proper response this time. "
+        "This sometimes happens with GenAI outputs. Please try again."
+    )
 
 
 # ── Header ────────────────────────────────────────────────────────────────────
@@ -349,20 +352,32 @@ elif st.session_state.step == 3 and st.session_state.report:
     s = report.system
 
     # ── PDF Export ────────────────────────────────────────────────────────
-    col_head, col_pdf = st.columns([4, 1])
+    col_head, col_pdf, col_md = st.columns([3, 1, 1])
     with col_pdf:
         try:
             pdf_bytes = generate_pdf(report)
             st.download_button(
-                label="⬇ Download PDF",
+                label="⬇ PDF",
                 data=pdf_bytes,
-                file_name=f"ThreatCompass_{s.project_name.replace(' ', '_').lower()}.pdf",
+                file_name=f"threatlens_{s.project_name.replace(' ', '_').lower()}.pdf",
                 mime="application/pdf",
                 type="primary",
                 use_container_width=True,
             )
         except Exception as e:
-            st.warning(f"PDF export unavailable: {e}")
+            st.warning("PDF export unavailable")
+    with col_md:
+        try:
+            md_text = generate_markdown(report)
+            st.download_button(
+                label="⬇ Markdown",
+                data=md_text,
+                file_name=f"threatlens_{s.project_name.replace(' ', '_').lower()}.md",
+                mime="text/markdown",
+                use_container_width=True,
+            )
+        except Exception as e:
+            st.warning("Markdown export unavailable")
 
     # ── Assumptions banner ────────────────────────────────────────────────
     if s.assumptions:
@@ -392,6 +407,30 @@ elif st.session_state.step == 3 and st.session_state.report:
         </p>
     </div>
     """, unsafe_allow_html=True)
+
+    # User type context callout
+    operator_threats = ["LLM03", "LLM04", "LLM05", "LLM10"]  # threats where operator control is partial
+    full_control = [t for t in report.threats if t.threat_id not in operator_threats]
+    partial_control = [t for t in report.threats if t.threat_id in operator_threats]
+
+    if s.user_type == "model_operator" and report.threats:
+        st.info(
+            f"**As a model operator**, {len(full_control)} of {len(report.threats)} threats "
+            f"are fully within your control to fix directly. "
+            f"{len(partial_control)} require monitoring your AI provider rather than "
+            f"direct remediation — see individual threat safeguards for specifics."
+        )
+    elif s.user_type == "model_builder" and report.threats:
+        st.info(
+            f"**As a model builder**, you have direct control over all {len(report.threats)} "
+            f"threats identified — including model-level controls like training data integrity."
+        )
+    elif s.user_type == "hybrid" and report.threats:
+        st.info(
+            f"**As a hybrid operator/builder**, you have full control over your fine-tuning "
+            f"pipeline plus application-level controls. {len(partial_control)} threats "
+            f"also require monitoring your base model provider."
+        )
 
     # ── Metrics ───────────────────────────────────────────────────────────
     m1, m2, m3, m4, m5 = st.columns(5)
@@ -448,7 +487,59 @@ elif st.session_state.step == 3 and st.session_state.report:
                 f'style="color:#888; font-size:0.82em;">OWASP Reference ↗</a>',
                 unsafe_allow_html=True,
             )
+            with st.expander("✏️ Override severity", expanded=False):
+                col_sev, col_reason, col_btn = st.columns([1.2, 2.5, 1])
+                with col_sev:
+                    override = st.selectbox(
+                        "New severity",
+                        options=["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+                        index=["CRITICAL", "HIGH", "MEDIUM", "LOW"].index(threat.severity),
+                        key=f"override_{threat.threat_id}",
+                        label_visibility="collapsed",
+                    )
+                with col_reason:
+                    reason = st.text_input(
+                        "Reason (required)",
+                        key=f"override_reason_{threat.threat_id}",
+                        placeholder="Why are you changing this severity? (required)",
+                        label_visibility="collapsed",
+                    )
+                with col_btn:
+                    update_clicked = st.button(
+                        "Update", key=f"update_btn_{threat.threat_id}",
+                        use_container_width=True,
+                    )
+
+                if update_clicked:
+                    if not reason.strip():
+                        st.error("A reason is required before updating severity.")
+                    else:
+                        # Persist the override into the report stored in session state
+                        for t in st.session_state.report.threats:
+                            if t.threat_id == threat.threat_id:
+                                t.severity = override
+                                t.severity_override_reason = reason.strip()
+
+                        # Recalculate aggregate counts since a severity changed
+                        threats = st.session_state.report.threats
+                        st.session_state.report.critical_count = sum(1 for t in threats if t.severity == "CRITICAL")
+                        st.session_state.report.high_count = sum(1 for t in threats if t.severity == "HIGH")
+                        st.session_state.report.medium_count = sum(1 for t in threats if t.severity == "MEDIUM")
+                        st.session_state.report.low_count = sum(1 for t in threats if t.severity == "LOW")
+
+                        st.success(f"Severity updated to {override}")
+                        st.rerun()
+
+                if getattr(threat, "severity_override_reason", None):
+                    st.caption(f"📝 Override reason: {threat.severity_override_reason}")
             st.markdown("")
+            with st.expander("🔍 Why this threat fired", expanded=False):
+                st.caption(
+                    f"{threat.signals_detected} of {threat.signals_total} signals detected "
+                    f"in your system architecture:"
+                )
+                for e in threat.evidence:
+                    st.markdown(f"- {e}")
 
             if threat.narrative:
                 sections = _parse_narrative_sections(threat.narrative)

@@ -89,6 +89,9 @@ class LLM08_ExcessiveAgency(BaseEvaluator):
 
         return evidence
 
+    def get_signal_count(self) -> int:
+        return 5  # transactions, freeze, approve, modify, internal apis
+
     def get_mitigations(self, system) -> List[str]:
         mitigations = []
 

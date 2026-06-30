@@ -83,6 +83,9 @@ class LLM01_PromptInjection(BaseEvaluator):
 
         return evidence
 
+    def get_signal_count(self) -> int:
+        return 5  # customer input, employee input, RAG, internal APIs, agentic actions
+
     def get_mitigations(self, system) -> List[str]:
         mitigations = []
 
