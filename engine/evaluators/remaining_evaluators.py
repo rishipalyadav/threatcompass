@@ -150,7 +150,7 @@ class LLM04_ModelDoS(BaseEvaluator):
         ]
 
     def get_signal_count(self) -> int:
-        return 1  # transactions, freeze, approve, modify, internal apis
+        return 2  # transactions, freeze, approve, modify, internal apis
 
     def get_mitigations(self, system) -> List[str]:
         return [

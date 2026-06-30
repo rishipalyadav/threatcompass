@@ -608,10 +608,7 @@ elif st.session_state.step == 3 and st.session_state.report:
         st.checkbox(item, value=False, key=f"grc_{item[:50]}")
     st.divider()
     st.warning(
-        "⚠️ **Disclaimer:** This is a project-generated work. Kindly verify with "
-        "your expertise before acting on any recommendations. This report is "
-        "suggestive in nature and should not be treated as a substitute for a "
-        "professional security assessment."
+        "⚠️ **Disclaimer:** ThreatCompass is an experimental tool intended to support, not replace, professional threat modeling and security assessment practices. Outputs are generated using large language models and deterministic heuristics, and should be independently reviewed and validated by qualified security or compliance professionals before being used to inform risk decisions, remediation efforts, or audit evidence."
     )
 
 
