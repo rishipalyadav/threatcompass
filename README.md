@@ -88,8 +88,9 @@ Edit `.env`:
 ```
 LLM_PROVIDER=groq
 GROQ_API_KEY=your_groq_api_key_here
-GROQ_MODEL=llama-3.3-70b-versatile
+GROQ_MODEL=your model (I used qwen)
 ```
+Sometimes, when genAI does not generate proper response in the requested format, the tool throws an error. There is nothing wrong. This is non-determinstic nature of GenAI. Just try again. 
 
 ### 3. Run the app
 
